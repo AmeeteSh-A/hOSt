@@ -390,9 +390,6 @@ func readPdfNative(path string, targetPages []uint32) (string, error) {
 	return buf.String(), nil
 }
 
-// ---------------------------------------------------------------------
-// THE CRYPTOGRAPHY SANDBOX (ZERO-TRUST VAULT)
-// ---------------------------------------------------------------------
 const htmlDecrypterTemplate = `<!DOCTYPE html>
 <html>
 <head>
@@ -1389,9 +1386,6 @@ func spawnCSVSandbox(fyneApp fyne.App, apiKey string) {
 	sandbox.Show()
 }
 
-// ---------------------------------------------------------------------
-// THE MARKDOWN SANDBOX (LIVE COMPILER)
-// ---------------------------------------------------------------------
 func spawnMarkdownSandbox(fyneApp fyne.App) {
 	sandbox := fyneApp.NewWindow("Live Transpiler")
 	sandbox.Resize(fyne.NewSize(1000, 600))
@@ -1400,12 +1394,11 @@ func spawnMarkdownSandbox(fyneApp fyne.App) {
 	inputEditor.SetPlaceHolder("Type here...")
 	inputEditor.Wrapping = fyne.TextWrapWord
 
-	// Using a Label inside a Scroll container guarantees crisp, theme-default black/dark text
 	outputLabel := widget.NewLabel("")
 	outputLabel.Wrapping = fyne.TextWrapWord
 	outputScroll := container.NewScroll(outputLabel)
 
-	mode := 0 // 0: MD->HTML, 1: HTML->MD
+	mode := 0 // 0: MD se HTML, 1: HTML to MD
 	modeBtn := widget.NewButton("Mode: MD -> HTML", nil)
 	modeBtn.OnTapped = func() {
 		if mode == 0 {
@@ -1434,7 +1427,6 @@ func spawnMarkdownSandbox(fyneApp fyne.App) {
 
 		inputBytes := []byte(s)
 
-		// THE FIX: Massive memory allocation to account for HTML tag expansion
 		bufferSize := 8 + len(inputBytes)*5
 		if bufferSize < 65536 {
 			bufferSize = 65536
@@ -1447,7 +1439,6 @@ func spawnMarkdownSandbox(fyneApp fyne.App) {
 
 		res := executeWasmModule("../compiled-binaries/markdown_engine.wasm", payload)
 
-		// Update the Label directly. This will be crisp black text and won't reset on Enter.
 		outputLabel.SetText(string(res))
 	}
 
