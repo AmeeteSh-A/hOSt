@@ -1,0 +1,12 @@
+tmp/
+New folder/
+everything.docx
+idea draft.docx
+newIdeaDraft.docx
+hOSt.rar
+hOSt.zip
+host-daemon/host.exe
+host-daemon/data.csv
+host-daemon/data.xlsx
+host-daemon/input.png
+wasm-modules/*/target/
