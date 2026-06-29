@@ -44,14 +44,14 @@ hOSt inverts this model. Instead of installing applications that contain feature
 
 hOSt operates as three distinct layers that run in sequence for every operation:
 
-**Layer 1 — The Master Daemon (LLM Intent Router)**
+**Layer 1 , The Master Daemon (LLM Intent Router)**
 A single always-running Go/Fyne window with one input. You type what you want. A Groq-hosted Llama 3.3-70b model parses your intent and returns a typed sandbox identifier (`image`, `csv`, `pdf`, `crypto`, `archive`, `markdown`). The daemon spawns the corresponding sandbox window.
 
-**Layer 2 — The Sandbox (Native Fyne Window)**
-Each sandbox is an independent Go window with its own state. Inside each sandbox, a second LLM call generates a `KernelLayout` — a JSON description of the UI controls needed for your specific request. These controls are rendered as live Fyne widgets: sliders, inputs, buttons. Crucially, each control carries a `target_wasm` field pointing to the Wasm module it will invoke.
+**Layer 2 , The Sandbox (Native Fyne Window)**
+Each sandbox is an independent Go window with its own state. Inside each sandbox, a second LLM call generates a `KernelLayout` , a JSON description of the UI controls needed for your specific request. These controls are rendered as live Fyne widgets: sliders, inputs, buttons. Crucially, each control carries a `target_wasm` field pointing to the Wasm module it will invoke.
 
-**Layer 3 — The Wasm Engine (Rust Compute)**
-When you trigger an action, the Go host packs your inputs into a flat binary buffer and calls `execute()` on a Rust-compiled Wasm module via Wasmtime. The module operates entirely on its own linear memory — no WASI, no filesystem access, no imports. It returns a result buffer. The host interprets it and updates the UI.
+**Layer 3 , The Wasm Engine (Rust Compute)**
+When you trigger an action, the Go host packs your inputs into a flat binary buffer and calls `execute()` on a Rust-compiled Wasm module via Wasmtime. The module operates entirely on its own linear memory , no WASI, no filesystem access, no imports. It returns a result buffer. The host interprets it and updates the UI.
 
 ```mermaid
 flowchart TD
@@ -137,12 +137,12 @@ execute(ptr: i32, len: i32) -> i32  // Returns output length written at ptr
 
 The Go host packs all inputs into a flat binary buffer and writes it to the allocated region. The module reads it, processes in-place, and writes the result back to the same region. The host reads back `output_length` bytes.
 
-**Example — Crypto payload layout:**
+**Example , Crypto payload layout:**
 ```
 [OpID: 4 bytes][PassLen: 4 bytes][Password][Salt: 16 bytes][Nonce: 12 bytes][FileBytes]
 ```
 
-**Example — CSV filter payload layout:**
+**Example , CSV filter payload layout:**
 ```
 [OpID: 4 bytes][QueryLen: 4 bytes][QueryString][CSVBytes]
 ```
@@ -155,15 +155,15 @@ This protocol is intentionally minimal. Adding a new compute module means writin
 
 ## 🛠️ Tech Stack Decisions
 
-- **Why Go for the host:** Go's goroutine model and Fyne's immediate-mode rendering make it straightforward to spawn independent sandbox windows without threading complexity. The host is a coordinator, not a compute engine — Go is the right weight for that.
+- **Why Go for the host:** Go's goroutine model and Fyne's immediate-mode rendering make it straightforward to spawn independent sandbox windows without threading complexity. The host is a coordinator, not a compute engine , Go is the right weight for that.
 
-- **Why Rust for Wasm modules:** Rust compiles cleanly to `wasm32-unknown-unknown` without a runtime. The absence of a GC means the module's memory footprint is deterministic. AES-256-GCM, image transforms, and CSV processing need raw byte manipulation — Rust's ownership model makes the unsafe pointer casting in the memory protocol tractable.
+- **Why Rust for Wasm modules:** Rust compiles cleanly to `wasm32-unknown-unknown` without a runtime. The absence of a GC means the module's memory footprint is deterministic. AES-256-GCM, image transforms, and CSV processing need raw byte manipulation , Rust's ownership model makes the unsafe pointer casting in the memory protocol tractable.
 
 - **Why Wasmtime over WASM in-browser:** Wasmtime gives a native embedding API in Go. Modules run at near-native speed, validate before execution, and are isolated from the host filesystem without any WASI configuration. The security boundary is Wasmtime's problem, not ours.
 
 - **Why Groq / Llama 3.3-70b:** Inference latency matters here. The daemon has to feel instant. Groq's LPU hardware cuts Llama 3.3-70b inference to sub-second for the short prompts hOSt uses (intent routing, `KernelLayout` generation). OpenAI-compatible API means the client is `go-openai` with a swapped base URL.
 
-- **Why LLM-generated UI:** The sandbox UI is not known at compile time — it depends on what you asked for. Asking for a `crop` tool should give you x/y/w/h sliders. Asking for a `brightness` tool should give you a range slider. Hardcoding all possible control layouts defeats the purpose. The LLM generates the `KernelLayout` JSON and the host renders whatever it receives.
+- **Why LLM-generated UI:** The sandbox UI is not known at compile time , it depends on what you asked for. Asking for a `crop` tool should give you x/y/w/h sliders. Asking for a `brightness` tool should give you a range slider. Hardcoding all possible control layouts defeats the purpose. The LLM generates the `KernelLayout` JSON and the host renders whatever it receives.
 
 <p align="right">(<a href="#host">back to top</a>)</p>
 
